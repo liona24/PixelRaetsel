@@ -1,0 +1,3 @@
+[submodule "common/SmartTools"]
+	path = common/SmartTools
+	url = https://github.com/liona24/SmartTools.git
