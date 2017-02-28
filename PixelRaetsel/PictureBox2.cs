@@ -2,23 +2,39 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Drawing;
-using System.Linq;
 
-using GraphicsUtility;
 using SmartTools;
 
 namespace PixelRaetsel
 {
     class PictureBox2 : Panel
     {
+        struct P2
+        {
+            public readonly int X, Y;
+            public P2(int x, int y)
+            {
+                X = x;
+                Y = y;
+            }
+
+            public override int GetHashCode()
+            {
+                return -X ^ Y;
+            }
+        }
         private Bitmap img_org = null;
         private Frame img_gray = null;
         private Bitmap img_display = null;
-        private Vec2I sampleStep = new Vec2I(1, 1);
+        private P2 sampleStep = new P2(1, 1);
 
-        private List<List<Vec2I>> regionSeeds = new List<List<Vec2I>>();
+        //key is position of insertion, sampled
+        //value is the index of the region which owns it
+        private Dictionary<P2, int> regionSeeds = new Dictionary<P2, int>();
         private List<Color> colors = new List<Color>();
         private int activeRegion = -1;
+
+        private bool recordMouseTrace = false;
 
         public int RegionCount { get { return colors.Count; } }
         public int ActiveRegion
@@ -30,12 +46,17 @@ namespace PixelRaetsel
                     activeRegion = value;
             }
         }
+        public int SampleStepX { get { return sampleStep.X; } }
+        public int SampleStepY { get { return sampleStep.Y; } }
+        public bool DeleteTrace { get; set; }
+        public int OverlayAlpha { get; set; }
 
         public PictureBox2()
         {
             this.AutoScroll = true;
             this.DoubleBuffered = true;
             this.AutoScrollMinSize = new Size(0, 0);
+            OverlayAlpha = 128;
         }
 
         /// <summary>
@@ -65,43 +86,99 @@ namespace PixelRaetsel
 
         protected override void OnPaint(PaintEventArgs e)
         {
+            e.Graphics.Clear(Color.White);
             e.Graphics.TranslateTransform(AutoScrollPosition.X, AutoScrollPosition.Y);
             if (img_display != null)
                 e.Graphics.DrawImage(img_display, 0, 0);
-
             //Draw grid
             if (sampleStep.X > 1)
             {
                 using (Pen p = new Pen(Color.Red, 0.5f))
                 {
-                    int width = (int)e.Graphics.ClipBounds.Width;
-                    int height = (int)e.Graphics.ClipBounds.Height;
+                    int width = img_display.Width;
+                    int height = img_display.Height;
                     for (int i = 0; i < width; i += sampleStep.X)
-                        e.Graphics.DrawLine(p, new Point(i, 0), new Point(i, height));
+                        e.Graphics.DrawLine(p, new PointF(i - 0.5f * sampleStep.X, 0), new PointF(i - 0.5f * sampleStep.X, height));
                 }
             }
             if (sampleStep.Y > 1)
             {
                 using (Pen p = new Pen(Color.Red, 0.5f))
                 {
-                    int width = (int)e.Graphics.ClipBounds.Width;
-                    int height = (int)e.Graphics.ClipBounds.Height;
+                    int width = img_display.Width;
+                    int height = img_display.Height;
                     for (int i = 0; i < height; i += sampleStep.Y)
-                        e.Graphics.DrawLine(p, new Point(0, i), new Point(width, i));
+                        e.Graphics.DrawLine(p, new PointF(0, i - 0.5f * sampleStep.Y), new PointF(width, i - 0.5f * sampleStep.Y));
                 }
             }
 
             //Draw seeds as overlay
-            foreach (var i in regionSeeds.Zip(colors, (l, c) => Tuple.Create(l, c)))
+            foreach (var kvp in regionSeeds)
             {
-                var color = i.Item2;
-                using (Brush b = new SolidBrush(Color.FromArgb(128, color)))
+                var color = Color.FromArgb(OverlayAlpha, colors[kvp.Value]);
+                using (Brush b = new SolidBrush(color))
                 {
-                    foreach (var seed in i.Item1)
-                        e.Graphics.FillRectangle(b, new Rectangle(seed.X, seed.Y, sampleStep.X, sampleStep.Y));
+                    e.Graphics.FillRectangle(b, new RectangleF(-sampleStep.X * 0.5f + kvp.Key.X * sampleStep.X,
+                        -sampleStep.Y * 0.5f + kvp.Key.Y * sampleStep.Y, sampleStep.X, sampleStep.Y));
                 }
             }
             base.OnPaint(e);
+        }
+
+        protected override void OnMouseDown(MouseEventArgs e)
+        {
+            base.OnMouseDown(e);
+
+            if (activeRegion != -1)
+            {
+                recordMouseTrace = true;
+                int x = (e.X - AutoScrollPosition.X) / sampleStep.X;
+                int y = (e.Y - AutoScrollPosition.Y) / sampleStep.Y;
+                var key = new P2(x, y);
+                if (DeleteTrace)
+                    regionSeeds.Remove(key);
+                else
+                {
+                    if (regionSeeds.ContainsKey(key))
+                        regionSeeds[key] = activeRegion;
+                    else
+                        regionSeeds.Add(key, activeRegion);
+                }
+            }
+
+        }
+
+        protected override void OnMouseMove(MouseEventArgs e)
+        {
+            base.OnMouseMove(e);
+            if (recordMouseTrace)
+            {
+                int x = (e.X - AutoScrollPosition.X) / sampleStep.X;
+                int y = (e.Y - AutoScrollPosition.Y) / sampleStep.Y;
+                var key = new P2(x, y);
+                if (DeleteTrace)
+                    regionSeeds.Remove(key);
+                else
+                {
+                    if (regionSeeds.ContainsKey(key))
+                        regionSeeds[key] = activeRegion;
+                    else
+                        regionSeeds.Add(key, activeRegion);
+                }
+                Invalidate();
+            }
+        }
+
+        protected override void OnMouseUp(MouseEventArgs e)
+        {
+            base.OnMouseUp(e);
+            recordMouseTrace = false;
+            Invalidate();
+        }
+        protected override void OnScroll(ScrollEventArgs se)
+        {
+            base.OnScroll(se);
+            Invalidate();
         }
 
         /// <summary>
@@ -117,17 +194,8 @@ namespace PixelRaetsel
         /// </summary>
         public void AddRegion(Color color)
         {
-            regionSeeds.Add(new List<Vec2I>());
             colors.Add(color);
-            activeRegion = regionSeeds.Count - 1;
-        }
-        /// <summary>
-        /// Adds a seed point to the currently active region
-        /// </summary>
-        /// <param name="position">The position of the seed point</param>
-        public void AddSeedToActive(Vec2I position)
-        {
-            regionSeeds[activeRegion].Add(position);
+            activeRegion = colors.Count - 1;
         }
 
         /// <summary>
@@ -135,13 +203,27 @@ namespace PixelRaetsel
         /// </summary>
         public void ChangeResolution(int sampleStepX, int sampleStepY)
         {
-            sampleStep = new Vec2I(sampleStepX, sampleStepY);
+            if (colors.Count > 0)
+            {
+                var dict = new Dictionary<P2, int>();
+                foreach (var kvp in regionSeeds)
+                {
+                    int superX = kvp.Key.X * sampleStep.X;
+                    int superY = kvp.Key.Y * sampleStep.Y;
+                    var nKey = new P2(superX / sampleStepX, superY / sampleStepY);
+                    if (!dict.ContainsKey(nKey))
+                        dict.Add(nKey, kvp.Value);
+                }
+                regionSeeds = dict;
+            }
+
+            sampleStep = new P2(sampleStepX, sampleStepY);
             var tmp = new Frame(img_gray.Width / sampleStepX, img_gray.Height / sampleStepY);
-            //TODO this step seems kind of too much work for the result needed
             Imaging.Scale(img_gray, tmp, InterpolationType.NearestNeighbor);
-            var tmp2 = new Frame3(img_org.Width, img_org.Height);
+            var tmp2 = new Frame(img_org.Width, img_org.Height);
             Imaging.Scale(tmp, tmp2, InterpolationType.NearestNeighbor);
             img_display = tmp2.GetBitmap();
+
             Invalidate();
         }
         
@@ -155,10 +237,11 @@ namespace PixelRaetsel
 
         private void reset()
         {
-            sampleStep = new Vec2I(1, 1);
-            regionSeeds = new List<List<Vec2I>>();
+            sampleStep = new P2(1, 1);
+            regionSeeds = new Dictionary<P2, int>(); 
             colors = new List<Color>();
             activeRegion = -1;
+            recordMouseTrace = false;
         }
     }
 }
