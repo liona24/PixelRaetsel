@@ -193,8 +193,9 @@ namespace PixelRaetsel
                     }
                     else if (map[j][i] != color && counting)
                     {
-                        count = 1;
                         add(rowHeader[i], color, count);
+                        count = 1;
+                        color = map[j][i];
                     }
                     else if (map[j][i] != background)
                     {
@@ -213,6 +214,7 @@ namespace PixelRaetsel
                 count = 0;
                 bool counting = false;
                 colHeader[i] = new List<long>();
+
                 for (int j = 0; j < height; j++)
                 {
                     if (map[i][j] == background && counting)
@@ -223,8 +225,9 @@ namespace PixelRaetsel
                     }
                     else if (map[i][j] != color && counting)
                     {
-                        count = 1;
                         add(colHeader[i], color, count);
+                        count = 1;
+                        color = map[i][j];
                     }
                     else if (map[i][j] != background)
                     {

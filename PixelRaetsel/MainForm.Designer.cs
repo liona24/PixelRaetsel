@@ -136,6 +136,7 @@
             // 
             // btn_save
             // 
+            this.btn_save.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btn_save.Enabled = false;
             this.btn_save.Location = new System.Drawing.Point(560, 12);
             this.btn_save.Name = "btn_save";
@@ -147,6 +148,7 @@
             // 
             // check_backgroundAutomatic
             // 
+            this.check_backgroundAutomatic.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.check_backgroundAutomatic.AutoSize = true;
             this.check_backgroundAutomatic.Checked = true;
             this.check_backgroundAutomatic.CheckState = System.Windows.Forms.CheckState.Checked;
