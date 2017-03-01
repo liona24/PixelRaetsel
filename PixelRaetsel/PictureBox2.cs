@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Drawing;
 
+using GraphicsUtility;
 using SmartTools;
 
 namespace PixelRaetsel
@@ -25,6 +26,7 @@ namespace PixelRaetsel
         }
         private Bitmap img_org = null;
         private Frame img_gray = null;
+        private Frame img_gray_small = null;
         private Bitmap img_display = null;
         private P2 sampleStep = new P2(1, 1);
 
@@ -83,6 +85,46 @@ namespace PixelRaetsel
             colors[index] = color;
             Invalidate();
         }
+            
+        /// <summary>
+        /// Segmentates the image using the seeds planted.
+        /// </summary>
+        public void Segmentate()
+        {
+            var seeds = new List<Vec2I>();
+            var labels = new List<int>();
+            foreach (var kvp in regionSeeds)
+            {
+                seeds.Add(new Vec2I(kvp.Key.X, kvp.Key.Y));
+                labels.Add(kvp.Value + 1);
+            }
+            var rwSeg = new RandomWalkerSegmenter<byte>(seeds.ToArray(), labels.ToArray());
+            var res = rwSeg.Segmentate(img_gray_small);
+            for (int i = 0; i < img_gray_small.Width; i++)
+            {
+                for (int j = 0; j < img_gray_small.Height; j++)
+                {
+                    int index = res[i][j] - 1;
+                    var pos = new P2(i, j);
+                    if (index >= 0 && !regionSeeds.ContainsKey(pos))
+                        regionSeeds.Add(pos, index);
+                }
+            }
+            Invalidate();
+        }
+        /// <summary>
+        /// Writes the according color of each seed into an array
+        /// </summary>
+        public int[][] GetSeedMap()
+        {
+            var res = new int[img_gray_small.Width][];
+            for (int i = 0; i < img_gray_small.Width; i++)
+                res[i] = new int[img_gray_small.Height];
+
+            foreach (var kvp in regionSeeds)
+                res[kvp.Key.X][kvp.Key.Y] = colors[kvp.Value].ToArgb();
+            return res;
+        }
 
         protected override void OnPaint(PaintEventArgs e)
         {
@@ -134,15 +176,19 @@ namespace PixelRaetsel
                 recordMouseTrace = true;
                 int x = (e.X - AutoScrollPosition.X) / sampleStep.X;
                 int y = (e.Y - AutoScrollPosition.Y) / sampleStep.Y;
-                var key = new P2(x, y);
-                if (DeleteTrace)
-                    regionSeeds.Remove(key);
-                else
+                if (x >= 0 && x < img_gray_small.Width && y >= 0 && y < img_gray_small.Height)
                 {
-                    if (regionSeeds.ContainsKey(key))
-                        regionSeeds[key] = activeRegion;
+                    var key = new P2(x, y);
+
+                    if (DeleteTrace)
+                        regionSeeds.Remove(key);
                     else
-                        regionSeeds.Add(key, activeRegion);
+                    {
+                        if (regionSeeds.ContainsKey(key))
+                            regionSeeds[key] = activeRegion;
+                        else
+                            regionSeeds.Add(key, activeRegion);
+                    }
                 }
             }
 
@@ -155,15 +201,18 @@ namespace PixelRaetsel
             {
                 int x = (e.X - AutoScrollPosition.X) / sampleStep.X;
                 int y = (e.Y - AutoScrollPosition.Y) / sampleStep.Y;
-                var key = new P2(x, y);
-                if (DeleteTrace)
-                    regionSeeds.Remove(key);
-                else
+                if (x >= 0 && x < img_gray_small.Width && y >= 0 && y < img_gray_small.Height)
                 {
-                    if (regionSeeds.ContainsKey(key))
-                        regionSeeds[key] = activeRegion;
+                    var key = new P2(x, y);
+                    if (DeleteTrace)
+                        regionSeeds.Remove(key);
                     else
-                        regionSeeds.Add(key, activeRegion);
+                    {
+                        if (regionSeeds.ContainsKey(key))
+                            regionSeeds[key] = activeRegion;
+                        else
+                            regionSeeds.Add(key, activeRegion);
+                    }
                 }
                 Invalidate();
             }
@@ -218,11 +267,14 @@ namespace PixelRaetsel
             }
 
             sampleStep = new P2(sampleStepX, sampleStepY);
-            var tmp = new Frame(img_gray.Width / sampleStepX, img_gray.Height / sampleStepY);
-            Imaging.Scale(img_gray, tmp, InterpolationType.NearestNeighbor);
-            var tmp2 = new Frame(img_org.Width, img_org.Height);
-            Imaging.Scale(tmp, tmp2, InterpolationType.NearestNeighbor);
-            img_display = tmp2.GetBitmap();
+            img_gray_small = new Frame(img_gray.Width / sampleStepX, img_gray.Height / sampleStepY);
+            Imaging.Scale(img_gray, img_gray_small, InterpolationType.NearestNeighbor);
+            var tmp = new Frame(img_org.Width, img_org.Height);
+            Imaging.Scale(img_gray_small, tmp, InterpolationType.NearestNeighbor);
+            if (img_display != null)
+                img_display.Dispose();
+
+            img_display = tmp.GetBitmap();
 
             Invalidate();
         }
@@ -231,8 +283,11 @@ namespace PixelRaetsel
         {
             base.Dispose();
             img_org.Dispose();
+            img_org = null;
             img_display.Dispose();
+            img_display = null;
             img_gray = null;
+            img_gray_small = null;
         }
 
         private void reset()
