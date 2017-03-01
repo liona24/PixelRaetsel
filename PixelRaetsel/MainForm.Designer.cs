@@ -35,11 +35,12 @@
             this.btn_sampleStepDown = new System.Windows.Forms.Button();
             this.btn_sampleStepUp = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
-            this.panel1 = new PixelRaetsel.PictureBox2();
             this.radio_delete = new System.Windows.Forms.RadioButton();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.btn_fill = new System.Windows.Forms.Button();
             this.btn_save = new System.Windows.Forms.Button();
+            this.check_backgroundAutomatic = new System.Windows.Forms.CheckBox();
+            this.panel1 = new PixelRaetsel.PictureBox2();
             this.SuspendLayout();
             // 
             // openImgDialog
@@ -103,6 +104,61 @@
             this.label1.TabIndex = 6;
             this.label1.Text = "Auflösung:";
             // 
+            // radio_delete
+            // 
+            this.radio_delete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.radio_delete.AutoSize = true;
+            this.radio_delete.Enabled = false;
+            this.radio_delete.Location = new System.Drawing.Point(818, 86);
+            this.radio_delete.Name = "radio_delete";
+            this.radio_delete.Size = new System.Drawing.Size(66, 17);
+            this.radio_delete.TabIndex = 7;
+            this.radio_delete.TabStop = true;
+            this.radio_delete.Text = "Löschen";
+            this.radio_delete.UseVisualStyleBackColor = true;
+            this.radio_delete.CheckedChanged += new System.EventHandler(this.radio_delete_CheckedChanged);
+            // 
+            // saveFileDialog1
+            // 
+            this.saveFileDialog1.Filter = "JPEG files|*.jpg";
+            // 
+            // btn_fill
+            // 
+            this.btn_fill.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btn_fill.Enabled = false;
+            this.btn_fill.Location = new System.Drawing.Point(869, 634);
+            this.btn_fill.Name = "btn_fill";
+            this.btn_fill.Size = new System.Drawing.Size(75, 23);
+            this.btn_fill.TabIndex = 8;
+            this.btn_fill.Text = "Füllen";
+            this.btn_fill.UseVisualStyleBackColor = true;
+            this.btn_fill.Click += new System.EventHandler(this.btn_fill_Click);
+            // 
+            // btn_save
+            // 
+            this.btn_save.Enabled = false;
+            this.btn_save.Location = new System.Drawing.Point(560, 12);
+            this.btn_save.Name = "btn_save";
+            this.btn_save.Size = new System.Drawing.Size(75, 23);
+            this.btn_save.TabIndex = 9;
+            this.btn_save.Text = "Speichern";
+            this.btn_save.UseVisualStyleBackColor = true;
+            this.btn_save.Click += new System.EventHandler(this.btn_save_Click);
+            // 
+            // check_backgroundAutomatic
+            // 
+            this.check_backgroundAutomatic.AutoSize = true;
+            this.check_backgroundAutomatic.Checked = true;
+            this.check_backgroundAutomatic.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.check_backgroundAutomatic.Enabled = false;
+            this.check_backgroundAutomatic.Location = new System.Drawing.Point(641, 16);
+            this.check_backgroundAutomatic.Name = "check_backgroundAutomatic";
+            this.check_backgroundAutomatic.Size = new System.Drawing.Size(141, 17);
+            this.check_backgroundAutomatic.TabIndex = 10;
+            this.check_backgroundAutomatic.Text = "Hintergrund automatisch";
+            this.check_backgroundAutomatic.UseVisualStyleBackColor = true;
+            this.check_backgroundAutomatic.CheckedChanged += new System.EventHandler(this.check_backgroundAutomatic_CheckedChanged);
+            // 
             // panel1
             // 
             this.panel1.ActiveRegion = -1;
@@ -118,46 +174,12 @@
             this.panel1.Size = new System.Drawing.Size(800, 600);
             this.panel1.TabIndex = 0;
             // 
-            // radio_delete
-            // 
-            this.radio_delete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.radio_delete.AutoSize = true;
-            this.radio_delete.Location = new System.Drawing.Point(828, 640);
-            this.radio_delete.Name = "radio_delete";
-            this.radio_delete.Size = new System.Drawing.Size(66, 17);
-            this.radio_delete.TabIndex = 7;
-            this.radio_delete.TabStop = true;
-            this.radio_delete.Text = "Löschen";
-            this.radio_delete.UseVisualStyleBackColor = true;
-            this.radio_delete.CheckedChanged += new System.EventHandler(this.radio_delete_CheckedChanged);
-            // 
-            // saveFileDialog1
-            // 
-            this.saveFileDialog1.Filter = "PDF files|*.pdf";
-            // 
-            // btn_fill
-            // 
-            this.btn_fill.Location = new System.Drawing.Point(646, 12);
-            this.btn_fill.Name = "btn_fill";
-            this.btn_fill.Size = new System.Drawing.Size(75, 23);
-            this.btn_fill.TabIndex = 8;
-            this.btn_fill.Text = "Füllen";
-            this.btn_fill.UseVisualStyleBackColor = true;
-            // 
-            // btn_save
-            // 
-            this.btn_save.Location = new System.Drawing.Point(727, 12);
-            this.btn_save.Name = "btn_save";
-            this.btn_save.Size = new System.Drawing.Size(75, 23);
-            this.btn_save.TabIndex = 9;
-            this.btn_save.Text = "Speichern";
-            this.btn_save.UseVisualStyleBackColor = true;
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(956, 669);
+            this.Controls.Add(this.check_backgroundAutomatic);
             this.Controls.Add(this.btn_save);
             this.Controls.Add(this.btn_fill);
             this.Controls.Add(this.radio_delete);
@@ -188,6 +210,7 @@
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
         private System.Windows.Forms.Button btn_fill;
         private System.Windows.Forms.Button btn_save;
+        private System.Windows.Forms.CheckBox check_backgroundAutomatic;
     }
 }
 
