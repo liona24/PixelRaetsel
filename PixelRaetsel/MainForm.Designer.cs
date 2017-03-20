@@ -40,6 +40,8 @@
             this.btn_fill = new System.Windows.Forms.Button();
             this.btn_save = new System.Windows.Forms.Button();
             this.check_backgroundAutomatic = new System.Windows.Forms.CheckBox();
+            this.btn_zoom = new System.Windows.Forms.Button();
+            this.textBox_zoom = new System.Windows.Forms.TextBox();
             this.panel1 = new PixelRaetsel.PictureBox2();
             this.SuspendLayout();
             // 
@@ -161,6 +163,27 @@
             this.check_backgroundAutomatic.UseVisualStyleBackColor = true;
             this.check_backgroundAutomatic.CheckedChanged += new System.EventHandler(this.check_backgroundAutomatic_CheckedChanged);
             // 
+            // btn_zoom
+            // 
+            this.btn_zoom.Enabled = false;
+            this.btn_zoom.Location = new System.Drawing.Point(265, 12);
+            this.btn_zoom.Name = "btn_zoom";
+            this.btn_zoom.Size = new System.Drawing.Size(75, 23);
+            this.btn_zoom.TabIndex = 11;
+            this.btn_zoom.Text = "Zoom";
+            this.btn_zoom.UseVisualStyleBackColor = true;
+            this.btn_zoom.Click += new System.EventHandler(this.btn_zoom_Click);
+            // 
+            // textBox_zoom
+            // 
+            this.textBox_zoom.Enabled = false;
+            this.textBox_zoom.Location = new System.Drawing.Point(212, 14);
+            this.textBox_zoom.Name = "textBox_zoom";
+            this.textBox_zoom.Size = new System.Drawing.Size(47, 20);
+            this.textBox_zoom.TabIndex = 12;
+            this.textBox_zoom.Text = "1.0";
+            this.textBox_zoom.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
             // panel1
             // 
             this.panel1.ActiveRegion = -1;
@@ -181,6 +204,8 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(956, 669);
+            this.Controls.Add(this.textBox_zoom);
+            this.Controls.Add(this.btn_zoom);
             this.Controls.Add(this.check_backgroundAutomatic);
             this.Controls.Add(this.btn_save);
             this.Controls.Add(this.btn_fill);
@@ -213,6 +238,8 @@
         private System.Windows.Forms.Button btn_fill;
         private System.Windows.Forms.Button btn_save;
         private System.Windows.Forms.CheckBox check_backgroundAutomatic;
+        private System.Windows.Forms.Button btn_zoom;
+        private System.Windows.Forms.TextBox textBox_zoom;
     }
 }
 

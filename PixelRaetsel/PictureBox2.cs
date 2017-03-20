@@ -52,6 +52,7 @@ namespace PixelRaetsel
         public int SampleStepY { get { return sampleStep.Y; } }
         public bool DeleteTrace { get; set; }
         public int OverlayAlpha { get; set; }
+        public Bitmap OrignalImage { get { return img_org; } }
 
         public PictureBox2()
         {
@@ -67,6 +68,10 @@ namespace PixelRaetsel
         public void SetImage(Bitmap img)
         {
             reset();
+            if (img_org != null)
+                img_org.Dispose();
+            if (img_display != null)
+                img_display.Dispose();
             img_org = img;
             img_gray = new Frame(img);
             Imaging.EqualizeHist(img_gray);

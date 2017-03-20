@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+
 using SmartTools;
 
 namespace PixelRaetsel
@@ -34,9 +35,22 @@ namespace PixelRaetsel
             btn_save.Enabled = true;
             btn_fill.Enabled = true;
             check_backgroundAutomatic.Enabled = true;
+            btn_zoom.Enabled = true;
+            textBox_zoom.Enabled = true;
             label1.Enabled = true;
         }
 
+        private void newBitmap(Bitmap bmp)
+        {
+            panel1.SetImage(bmp);
+            enableProcessingControls();
+            colors = new List<Color>();
+            Background = null;
+            check_backgroundAutomatic.Checked = true;
+            foreach (string s in additionalComponents)
+                Controls.RemoveByKey(s);
+            textBox_zoom.Text = "1.0";
+        }
         private void btn_new_Click(object sender, EventArgs e)
         {
             var result = openImgDialog.ShowDialog();
@@ -44,13 +58,7 @@ namespace PixelRaetsel
             {
                 var fileStream = openImgDialog.OpenFile();
                 var bmp = new Bitmap(fileStream, false);
-                panel1.SetImage(bmp);
-                enableProcessingControls();
-                colors = new List<Color>();
-                Background = null;
-                check_backgroundAutomatic.Checked = true;
-                foreach (string s in additionalComponents)
-                    Controls.RemoveByKey(s);
+                newBitmap(bmp);
                 Invalidate();
             }
         }
@@ -315,6 +323,20 @@ namespace PixelRaetsel
                 var backSelect = new BackgroundSelector(this, colors);
                 backSelect.ShowDialog();
             }
+        }
+
+        private void btn_zoom_Click(object sender, EventArgs e)
+        {
+            double zoom;
+            if (double.TryParse(textBox_zoom.Text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out zoom))
+            {
+                var bmp = panel1.OrignalImage;
+                var bmpZoomed = new Bitmap(bmp, (int)(bmp.Width * zoom), (int)(bmp.Height * zoom));
+                newBitmap(bmpZoomed);
+                Invalidate();
+            }
+            else
+                MessageBox.Show("Fehler! Keine gültige Zahl!", "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 }
